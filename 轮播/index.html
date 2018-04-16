@@ -111,7 +111,7 @@ li{
             leave-to-class="fade-leave-to"
         >
             <!-- <ul class="banner-img"> -->
-                <li class="banner-img" v-for="(item,index) in images" v-bind:key="index" v-if="index==mark"><img v-bind:src="item"></li>
+                <li class="banner-img" v-for="(item,index) in images" v-bind:key="index" v-show="index==mark"><img v-bind:src="item"></li>
             <!-- </ul> -->
         </transition-group>
         <ul class="banner-btn">
