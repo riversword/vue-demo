@@ -83,6 +83,7 @@ li{
 }
 .fade-enter,.fade-leave-to{
     opacity: 0;
+    /*transform: translateX(-50%);*/
 }
 
 @keyframes fade-in{
@@ -163,10 +164,10 @@ li{
                 },2000);
             }*/
             play: function(){
-                this.timer = setInterval(this.play_method, 3000);
+                this.timer = setInterval(this.play_method, 2000);
             },
             play_method: function(){
-                console.log(this.mark);
+
                 if( this.mark < 3){ 
                     this.mark++;
                 }else{
