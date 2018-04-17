@@ -22,8 +22,8 @@ li{
     padding: 0;
     width: 500px;
     height: 300px;
-    background-color: rgb(100,100,100);
-    /*overflow: hidden;*/
+    /*background-color: rgb(100,100,100);*/
+    overflow: hidden;
 }
 
 .banner-img{
@@ -72,46 +72,68 @@ li{
     cursor: pointer;
 }
 .prev-btn{
-
+    /*margin-left: -30px;*/
+    transform: translateX(-100%);
 }
 .next-btn{
     float: right;
+    /*margin-right: -30px;*/
+    transform: translateX(100%);
 }
+#banner:hover .switch-btn{
+    /*margin-left: 0;
+     margin-right: 0;*/
+     transform: translateX(0);
+     transition: all .2s ease;
+}
+/*.fade-enter-active,*/
 .fade-enter-active,.fade-leave-active{
     /*animation: fade-in 2s;*/
     transition: all .5s ease;
 }
-.fade-enter,.fade-leave-to{
+
+.fade-enter{
     opacity: 0;
-    /*transform: translateX(-50%);*/
+    /*transform: translateX(50%) scale(0.8,0.8);*/
+    transform: scale(0.8,0.8);
+    /*z-index: 10;*/
 }
 
-@keyframes fade-in{
-    0%{
-        opacity: 0;
-    }
-    50%{
-        opacity: 0.5;
-    }
-    100%{
-        opacity: 1;
-    }
+.fade-enter-to{
+
 }
+
+.fade-leave{
+
+}
+
+.fade-leave-to-left{
+    opacity: 0;
+    transform: translateX(-100%) scale(0.8,0.8);
+    /*z-index: 10;*/
+}
+
+.fade-leave-to-right{
+    opacity: 0;
+    transform: translateX(100%) scale(0.8,0.8);
+    /*z-index: 10;*/
+}
+
 </style>
 </head>
 
 <body>
-    <div id="banner" v-on="{ mouseenter: stop_play, mouseleave: play}">
+    <div id="banner" v-on="{ mouseover: stop_play, mouseleave: play}">
         <transition-group 
             name="fade"
             tap="ul"
             enter-class="fade-enter"
             enter-active-class="fade-enter-active"
             leave-active-class="fade-leave-active"
-            leave-to-class="fade-leave-to"
+            v-bind:leave-to-class="leaveToModel"
         >
             <!-- <ul class="banner-img"> -->
-                <li class="banner-img" v-for="(item,index) in images" v-bind:key="index" v-show="index==mark"><img v-bind:src="item"></li>
+                <li class="banner-img" v-for="(item,index) in images" v-bind:key="index"   v-show="index==mark"><img v-bind:src="item"></li>
             <!-- </ul> -->
         </transition-group>
         <ul class="banner-btn">
@@ -134,10 +156,12 @@ li{
                 'image/a3.png',
                 'image/a4.png'
             ],
-            mark:0
+            mark:0,
+            leaveToModel: 'fade-leave-to-left'
         },
         methods:{
             next: function(){
+                this.leaveToModel = 'fade-leave-to-left';
                 if( this.mark < 3 ){
                     this.mark++;
                 } else {
@@ -145,6 +169,7 @@ li{
                 }
             },
             prev: function(){
+                this.leaveToModel = 'fade-leave-to-right';
                 if( this.mark > 0 ){
                     this.mark--;
                 } else {
@@ -152,6 +177,11 @@ li{
                 }
             },
             btn_to: function(id){
+                if( this.mark > id ){
+                    this.leaveToModel = 'fade-leave-to-right';
+                }else{
+                    this.leaveToModel = 'fade-leave-to-left';
+                }
                 this.mark = id;
             },
             /*auto_play: function(){
@@ -164,6 +194,7 @@ li{
                 },2000);
             }*/
             play: function(){
+                this.leaveToModel = 'fade-leave-to-left';
                 this.timer = setInterval(this.play_method, 2000);
             },
             play_method: function(){
