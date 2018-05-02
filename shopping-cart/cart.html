@@ -67,7 +67,7 @@
                   <li v-for="item in productList">
                     <div class="cart-tab-1">
                       <div class="cart-item-check">
-                        <a href="javascript:void 0" class="item-check-btn">
+                        <a href="javascript:void 0" class="item-check-btn" v-bind:class="{'check': item.checked}" v-on:click="selectProduct(item)">
                           <svg class="icon icon-ok"><use xlink:href="#icon-ok"></use></svg>
                         </a>
                       </div>
@@ -87,26 +87,32 @@
                       </div>
                     </div>
                     <div class="cart-tab-2">
-                      <div class="item-price">{{item.productPrice}}</div>
+                      <div class="item-price">{{item.productPrice | formatMoney}}</div>
+                      <!--注意过滤器的调用格式-->
                     </div>
                     <div class="cart-tab-3">
                       <div class="item-quantity">
                         <div class="select-self select-self-open">
                           <div class="quantity">
-                            <a href="javascript:void 0"></a>
-                            <input type="text" value="0" disabled>
-                            <a href="javascript:void 0"></a>
+                            <a href="javascript:void 0" v-on:click="changeMoney(item, -1)"> - </a>
+                            <input type="text" v-bind:value="item.productQuantity" disabled >
+
+                            <!--双向绑定-->
+                            <!-- <input type="text" value="0" v-model="item.productQuantity"> -->
+                            <a href="javascript:void 0" @click="changeMoney(item, 1)"> + </a>
                           </div>
                         </div>
                         <div class="item-stock">有货</div>
                       </div>
                     </div>
                     <div class="cart-tab-4">
-                      <div class="item-price-total"></div>
+                      <div class="item-price-total">{{item.productPrice * item.productQuantity | formatMoney}}</div>
+                      <!-- <div class="item-price-total">{{item.productPrice * item.productQuantity | gMoney("美元")}}</div> -->
+                      <!--全局过滤器传参调用-->
                     </div>
                     <div class="cart-tab-5">
                       <div class="cart-item-operation">
-                        <a href="javascript:void 0" class="item-edit-btn">
+                        <a href="javascript:void 0" class="item-edit-btn" v-on:click="delConfirm(item)"><!-- delFlag = true -->
                           <svg class="icon icon-del"><use xlink:href="#icon-del" ></use></svg>
                         </a>
                       </div>
@@ -121,7 +127,8 @@
               <div class="cart-foot-l">
                 <div class="item-all-check">
                   <a href="javascript:void 0">
-                    <span class="item-check-btn" >
+                    <span class="item-check-btn" v-bind:class="{'check': checkAll}" v-on:click="selectAll(true)" >
+                      <!--v-on:click 可传入表达式; v-on:click绑定的方法不传参数时，既可以加括号，也可以不加括号-->
                       <svg class="icon icon-ok"><use xlink:href="#icon-ok"></use></svg>
                     </span>
                     <span>全选</span>
@@ -129,34 +136,37 @@
                 </div>
                 <div class="item-all-del">
                   <a href="javascript:void 0" class="item-del-btn">
-                    <span>取消全选</span>
+                    <span v-on:click="selectAll(false)">取消全选</span>
                   </a>
                 </div>
               </div>
               <div class="cart-foot-r">
                 <div class="item-total">
-                  Item total: <span class="total-price"></span>
+                  Item total: <span class="total-price">{{totalPrice}}</span>
+                  <!-- <span class="total-price">{{calcTotalPrice()}}</span> 可以绑定函数吗？-->
+
+                  
                 </div>
                 <div class="next-btn-wrap">
-                  <a href="javascrit:;" class="btn btn--red" style="width: 200px">结账</a>
+                  <a href="address.html" class="btn btn--red" style="width: 200px">结账</a>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="md-modal modal-msg md-modal-transition" id="showModal">
+        <div class="md-modal modal-msg md-modal-transition " id="showModal" v-bind:class="{'md-show': delFlag}">
           <div class="md-modal-inner">
             <div class="md-top">
-              <button class="md-close">关闭</button>
+              <button class="md-close" v-on:click="delFlag = false">关闭</button>
             </div>
             <div class="md-content">
               <div class="confirm-tips">
                 <p id="cusLanInfo">你确认删除此订单信息吗?</p>
               </div>
               <div class="btn-wrap col-2">
-                <button class="btn btn--m" id="btnModalConfirm">Yes</button>
-                <button class="btn btn--m btn--red" id="btnModalCancel">No</button>
+                <button class="btn btn--m" id="btnModalConfirm" v-on:click="delProduct()">Yes</button>
+                <button class="btn btn--m btn--red" id="btnModalCancel" v-on:click="delFlag = false">No</button>
               </div>
             </div>
           </div>

@@ -46,7 +46,6 @@
 
     <div class="container">
       <div class="checkout-addr">
-        <!-- process step -->
         <div class="check-step">
           <ul>
             <li class="cur">地址确认</li>
@@ -56,18 +55,18 @@
           </ul>
         </div>
 
-        <!-- address list -->
         <div class="checkout-title">
           <span>配送地址</span>
         </div>
         <div class="addr-list-wrap">
           <div class="addr-list">
             <ul>
-              <li>
+              <!--列表渲染-->
+              <li v-for="(item, index) in filterAddress" v-bind:class="{'check': index == currentIndex}" v-on:click="currentIndex = index">
                 <dl>
-                  <dt>JackBean</dt>
-                  <dd class="address">北京朝阳区朝阳公园</dd>
-                  <dd class="tel">13356576785</dd>
+                  <dt>{{item.userName}}</dt>
+                  <dd class="address">{{item.streetName}}</dd>
+                  <dd class="tel">{{item.tel}}</dd>
                 </dl>
                 <div class="addr-opration addr-edit">
                   <a href="javascript:;" class="addr-edit-btn">
@@ -80,9 +79,9 @@
                   </a>
                 </div>
                 <div class="addr-opration addr-set-default">
-                  <a href="javascript:;" class="addr-set-default-btn" ><i>设为默认</i></a>
+                  <a href="javascript:;" class="addr-set-default-btn" ><i v-if="!item.isDefault" v-on:click="setDefault(item.addressId)">设为默认</i></a>
                 </div>
-                <div class="addr-opration addr-default">默认地址</div>
+                <div class="addr-opration addr-default" v-if="item.isDefault">默认地址</div>
               </li>
 
               <li class="addr-new">
@@ -97,7 +96,7 @@
           </div>
 
           <div class="shipping-addr-more">
-            <a class="addr-more-btn up-down-btn" href="javascript:">
+            <a class="addr-more-btn up-down-btn" href="javascript:" v-on:click="limitNum = addressList.length">
               more
               <i class="i-up-down">
                 <i class="i-up-down-l"></i>
@@ -114,11 +113,11 @@
         <div class="shipping-method-wrap">
           <div class="shipping-method">
             <ul>
-              <li>
+              <li v-bind:class="{'check': deliverWay == 1}" v-on:click="deliverWay = 1">
                 <div class="name">标准配送</div>
                 <div class="price">Free</div>
               </li>
-              <li>
+              <li v-bind:class="{'check': deliverWay == 2}" v-on:click="deliverWay = 2">
                 <div class="name">高级配送</div>
                 <div class="price">180</div>
               </li>
@@ -196,8 +195,9 @@
   </div>
 
 
-    <script src="js/lib/vue.min.js"></script>
-    <script src="js/lib/vue-resource.js"></script>
+    <!--<script src="js/lib/vue.min.js"></script>
+    <script src="js/lib/vue-resource.js"></script>-->
+    <script src="js/lib/vue.js"></script>
     <script src="js/address.js"></script>
 </body>
 </html>

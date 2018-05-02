@@ -61,15 +61,85 @@ var vm = new Vue({
 
 - `v-text`、`v-html`绑定数据不需要大括号；
 
+  ​
+
 #### 属性绑定
 
 ```html
 <img v-bind:src="item.productImage">
+
+<li	v-bind:class="{'check': item.checked}"></li> 
+<li v-bind:class="{check: item.checked}"></li>
+<li v-bind:class="[error, active]"></li>
 ```
 
 - `v-bind:属性名="绑定内容"`或者简写为`::属性名="绑定内容"`，注意**元素自身属性，不需要加大括号**；
 
+- class绑定的几种方式，绑定的class与原有的class宜分开写；
+
+  ​
+
 #### 列表渲染
+
+```html
+<ul v-for="(item,index) in productList">
+    <li>
+    	<ul>
+            <li v-for="part in item.parts" v-text="part.partsName"></li>
+        </ul>
+    </li>
+</ul>
+```
+
+- 索引值
+- 嵌套列表
+
+
+
+#### 过滤器
+
+```html
+<div>{{item.productPrice | formatMoney}}</div>
+<!--item.productPrice会当作参数传入formatMoney函数-->
+```
+
+```js
+new Vue({
+	filters: {
+      formatMoney: function(value) {//value 调用时传入的值
+        return "￥ " + value.toFixed(2);
+      }
+    },
+});
+```
+
+- 调用格式，|前的值会被当作参数传入
+
+
+
+#### 计算属性computed
+
+```html
+<li v-for="(item, index) in filterAddress"></li>
+```
+
+```js
+new Vue({
+computed: {
+        filterAddress: function () {
+            return this.addressList.slice(0, this.limitNum);
+        }
+    },
+});
+```
+
+
+
+#### 实用方法
+
+```html
+<v-bind:class="{'check': index == currentIndex}" v-on:click="currentIndex = index"></li>
+```
 
 
 
