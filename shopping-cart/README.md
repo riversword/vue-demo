@@ -4,7 +4,7 @@
 
 
 
-####实例声明
+#### 实例声明
 
 ```js
 var vm = new Vue({
@@ -50,7 +50,7 @@ var vm = new Vue({
 
   ​
 
-####内容绑定
+#### 内容绑定
 
 ```html
 <p v-text="title"></p>
@@ -61,7 +61,7 @@ var vm = new Vue({
 
 - `v-text`、`v-html`绑定数据不需要大括号；
 
-####属性绑定
+#### 属性绑定
 
 ```html
 <img v-bind:src="item.productImage">
@@ -69,7 +69,7 @@ var vm = new Vue({
 
 - `v-bind:属性名="绑定内容"`或者简写为`::属性名="绑定内容"`，注意**元素自身属性，不需要加大括号**；
 
-列表渲染
+#### 列表渲染
 
 
 
