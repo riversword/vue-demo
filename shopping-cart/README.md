@@ -135,6 +135,16 @@ computed: {
 
 
 
+#### 双向绑定v-model
+
+```html
+<input type="text" value="0" v-model="item.productQuantity">
+```
+
+- 双向绑定，html中的数据也会传递到js中。用于表单控件；
+
+
+
 #### 实用方法
 
 ```html
