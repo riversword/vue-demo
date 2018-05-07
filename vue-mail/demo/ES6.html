@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ES6用法</title>
+
+</head>
+<body>
+    <h2>ES6</h2>
+
+    <script>
+        function sum(x,y,z) {
+            let total = 0;
+            if (x) total += x;
+            if (y) total += y;
+            if (z) total += z;
+
+            //console.log("total: ${total}");
+            console.log("total", total);
+        }
+        sum(1, "", 5);
+
+        function esSum(...m) {// 此处的...m表示rest参数
+            let es_total = 0;
+            for(var i of m){ //遍历m
+                es_total += i;
+            }
+            console.log("es_total", es_total);
+        }
+        esSum(2,3,4,6);
+
+        let esSum3 = (...m)=>{
+            let es_total = 0;
+            for(var i of m){ //遍历m
+                es_total += i;
+            }
+            console.log("es_total", es_total);
+        }
+        esSum3(2,3,4,6);
+
+        var [x, y] = [4, 8];
+        console.log([4, 8]);
+        console.log(...[4, 8]); //数组扩展，...与数组在一起时，会进行运算将数组拆解
+
+        let arr1 = [1, 2, 3];
+        let arr2 = [4, 5, 6];
+        console.log(arr1.concat(arr2));
+        console.log([...arr1, ...arr2]);
+
+        var [a, ...b] = [1, 2, 3, 4];
+        console.log(a); // 1
+        console.log(b); // [2, 3, 4]
+
+
+        let [a1, a2, a3] = "es6123";
+        //a1="e"  a2="s"  a3="6"
+
+        let b1 = [..."es6"];
+        //b1=["e", "s", "6"]
+
+    </script>
+</body>
+</html>

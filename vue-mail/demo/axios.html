@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>axios用法实例</title>
+
+<script src="../node_modules/vue/dist/vue.js"></script>
+<script src="../node_modules/axios/dist/axios.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>axios插件</h1>
+        <a href="javascript:;">get请求</a>
+        <a href="javascript:;">post请求</a>
+        <a href="javascript:;">http</a>
+        <div>
+            <span>{{msg}}</span>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                msg: ''
+            },
+            mounted: function() {
+                //全局拦截 拦截请求（请求发出前执行）
+                axios.interceptors.request.use(function(config) {
+                    console.log("request init");
+                    return config;
+                });
+
+                //全局拦截 拦截响应（响应返回前执行）
+                axios.interceptors.response.use(function(response) {
+                    console.log("response init");
+                    return response;
+                });
+            },
+            methods: {
+                get: function() {
+                    axios.get("../package.json", {
+                        params: {
+                            userId: "999"
+                        },
+                        headers: {
+                            token: "riversword"
+                        },
+                        before: function() {
+                            console.log("before init");
+                        }
+                    }).then(res=>{
+                        this.msg = res.data;
+                    }).catch(function(error) {
+                        console.log("error=" + error);
+                    });
+                },
+                post: function() {
+                    axios.post("../package.json", {
+                        userId: "888"
+                    }, {
+                        headers: {
+                            token: "riversword2"
+                        }
+                    }).then(res=>{
+                        this.msg = res.data;
+                    }).catch(function(error) {
+                        console.log("error=" + error);
+                    });
+                },
+                http: function() {
+                    axios({
+                        url: "../package.json",
+                        method: "get",
+                        params: { //get请求参数
+                            userId: "http-get"
+                        }
+                        // method: "post",
+                        // data: { //post请求参数
+                        //     userId: "101"
+                        // },
+                        headers: {
+                            token: "riversword3"
+                        }
+                    }).then(res=>{
+                        this.msg = res.data;
+                    }).catch(function(error) {
+                        console.log("error=" + error);
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

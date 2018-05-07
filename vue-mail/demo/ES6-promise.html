@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ES6-promise用法</title>
+
+</head>
+<body>
+    <h2>ES6-promise</h2>
+
+    <script>
+        let checkLogin = function () {
+            return new Promise(function (resolve, reject) { //resolve成功时执行  reject报错时执行
+                let flag = document.cookie.indexOf("userId") > -1 ? true : false ;
+                if (flag = true) { //flag传入默认值true
+                    resolve({
+                        status: 0,
+                        result: true
+                    });
+                } else {
+                    reject("error");
+                }
+            });
+        };
+
+        let getUseInfo = ()=>{
+            return new Promise((resolve, reject)=>{
+                let userInfo = {
+                    userId: "101"
+                };
+                resolve(userInfo);
+            });
+        };
+        //是promise才能用.then调用
+        checkLogin().then((res)=>{ //处理第一个promise
+            if (res.status == 0) {
+                console.log("login succeed");
+                return getUseInfo(); //返回的是promise
+            }
+        }).catch((error)=>{ //捕获第一个promse的错误
+            console.log("error",error);
+        }).then((res2)=>{ //处理第二个promise
+            console.log("userId",res2.userId);
+        });
+
+        //同时调用多个请求，注意数组元素要为promise对象
+        Promise.all([checkLogin(), getUseInfo()]).then(([res1, res2])=>{
+            console.log("result1",res1.result);
+            console.log("result2",res2.userId);
+        });
+
+    </script>
+</body>
+</html>
