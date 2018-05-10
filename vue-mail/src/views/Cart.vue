@@ -59,42 +59,43 @@
               </ul>
             </div>
             <ul class="cart-item-list">
-              <li>
+
+              <li v-for="(item, index) in cartList">
                 <div class="cart-tab-1">
                   <div class="cart-item-check">
-                    <a href="javascipt:;" class="checkbox-btn item-check-btn">
+                    <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'check': item.checked == '1'}" v-on:click="editCart('checked', item)">
                       <svg class="icon icon-ok">
                         <use xlink:href="#icon-ok"></use>
                       </svg>
                     </a>
                   </div>
                   <div class="cart-item-pic">
-                    <img src="/static/1.jpg">
+                    <img v-bind:src="'/static/'+item.productImage">
                   </div>
                   <div class="cart-item-title">
-                    <div class="item-name">XX</div>
+                    <div class="item-name">{{item.productName}}</div>
                   </div>
                 </div>
                 <div class="cart-tab-2">
-                  <div class="item-price">1000</div>
+                  <div class="item-price">{{item.salePrice}}</div>
                 </div>
                 <div class="cart-tab-3">
                   <div class="item-quantity">
                     <div class="select-self select-self-open">
                       <div class="select-self-area">
-                        <a class="input-sub">-</a>
-                        <span class="select-ipt">10</span>
-                        <a class="input-add">+</a>
+                        <a v-on:click="editCart('minus', item)" class="input-sub">-</a>
+                        <span class="select-ipt">{{item.productNum}}</span>
+                        <a v-on:click="editCart('add', item)" class="input-add">+</a>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="cart-tab-4">
-                  <div class="item-price-total">100</div>
+                  <div class="item-price-total">{{item.salePrice*item.productNum | currency('￥')}}</div>
                 </div>
                 <div class="cart-tab-5">
                   <div class="cart-item-opration">
-                    <a href="javascript:;" class="item-edit-btn">
+                    <a v-on:click="delCartConfirm(item.productId)" href="javascript:;" class="item-edit-btn">
                       <svg class="icon icon-del">
                         <use xlink:href="#icon-del"></use>
                       </svg>
@@ -102,6 +103,7 @@
                   </div>
                 </div>
               </li>
+
             </ul>
           </div>
         </div>
@@ -109,8 +111,8 @@
           <div class="cart-foot-inner">
             <div class="cart-foot-l">
               <div class="item-all-check">
-                <a href="javascipt:;">
-                  <span class="checkbox-btn item-check-btn">
+                <a v-on:click="toggleCheckAll" href="javascipt:;">
+                  <span class="checkbox-btn item-check-btn" v-bind:class="{'check': checkAllFlag}">
                       <svg class="icon icon-ok"><use xlink:href="#icon-ok"/></svg>
                   </span>
                   <span>Select all</span>
@@ -119,7 +121,7 @@
             </div>
             <div class="cart-foot-r">
               <div class="item-total">
-                Item total: <span class="total-price">500</span>
+                Item total: <span class="total-price">{{totalPrice | currency('￥')}}</span>
               </div>
               <div class="btn-wrap">
                 <a class="btn btn--red">Checkout</a>
@@ -129,6 +131,13 @@
         </div>
       </div>
     </div>
+    <Modal v-bind:mdShow="modalConfirm" v-on:close="closeModal">
+      <p slot="message">你确定删除此商品吗？</p>
+      <div slot="btnGroup">
+        <a v-on:click="delCart" href="javascript:;" class="btn btn-m">确定</a>
+        <a v-on:click="closeModal" href="javascript:;" class="btn btn-m">关闭</a>
+      </div>
+    </Modal>
     <nav-footer></nav-footer>
   </div>
 </template>
@@ -165,11 +174,45 @@ import Modal from "./../components/Modal.vue"
 
 import axios from "axios"
 
+import {currency} from "./../util/currency"
     export default{
         data(){
             return{
-
+              cartList: [],
+              modalConfirm: false,
+              productId: "", //待删除的商品id
+              //checkAllFlag: false
             }
+        },
+        mounted() {
+          this.init();
+        },
+        filters: { //注意加s
+          //currency: currency //直接使用main.js中的全局过滤器
+        },
+        computed: { //实时计算属性
+          checkAllFlag () {
+            return this.checkedCount == this.cartList.length;
+          },
+          checkedCount () {
+            var i = 0;
+            this.cartList.forEach( (item)=>{
+              if (item.checked == '1') {
+                i++;
+              }
+            } );
+            console.log('i', i);
+            return i;
+          },
+          totalPrice () {
+            var money = 0;
+            this.cartList.forEach( (item)=>{
+              if (item.checked == '1') {
+                money += parseFloat(item.salePrice) * parseInt(item.productNum);
+              }
+            } );
+            return money;
+          }
         },
         components: {
           NavHeader,
@@ -181,8 +224,68 @@ import axios from "axios"
           init() {
             axios.get("/users/cartList").then((response)=>{
               let res = response.data;
+              console.log("response.data", response.data);
               this.cartList = res.result;
             });
+          },
+          delCartConfirm(productId) {
+            this.modalConfirm = true; //显示模态框
+            this.productId = productId;
+          },
+          delCart() {
+            axios.post("/users/cartDel", {
+              productId: this.productId //请求参数
+            }).then( (response)=>{
+              let res = response.data;
+              console.log("res",res);
+              if (res.status = '0') {
+                this.modalConfirm = false; //隐藏模态框
+                this.init(); //重新请求数据
+              }
+            
+            } );
+          },
+          closeModal() {
+            this.modalConfirm = false;
+              //this.mdShowCart = false;
+          },
+          editCart(flag, item) {
+            if (flag == 'add') {
+              item.productNum++;
+            } else if (flag == 'minus') {
+              if (item.productNum <= 1) {
+                return;
+              }
+              item.productNum--;
+            } else if (flag == 'checked') {
+              item.checked = item.checked == '1' ? '0' : '1';
+            }
+            axios.post("/users/cartEdit", {
+              productId: item.productId,
+              productNum: item.productNum,
+              checked: item.checked
+            }).then( (response)=>{
+              let res = response.data;
+
+            } );
+          },
+          toggleCheckAll() {
+            //this.checkAllFlag = !this.checkAllFlag; //实时计算属性无法进行福州
+            var flag = !this.checkAllFlag;
+            this.cartList.forEach( (item)=>{
+              // item.checked = this.checkAllFlag ? '1' : '0';
+              item.checked = flag ? '1' : '0';
+            } );
+
+            axios.post("/users/editCheckAll", {
+              // checkAll: this.checkAllFlag
+              checkAll: flag
+            }).then( (response)=>{
+              let res = response.data;
+              if (res.status == '0') {
+                console.log("checkAll update succeed");
+              }
+            } );
           }
         }
     }

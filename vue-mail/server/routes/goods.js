@@ -103,7 +103,7 @@ router.post("/addCart", function (req, res, next) {
                     }
                 });
 
-                if (goodsItem) { //若添加已有商品，保存就可以了（上一补已经++了）
+                if (goodsItem) { //若添加已有商品，保存就可以了（上一步已经++了）
                     userDoc.save(function (err2, doc2) {
                         if (err2) {
                                 res.json({

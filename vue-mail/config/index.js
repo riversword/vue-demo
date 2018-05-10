@@ -19,7 +19,7 @@ module.exports = {
             //   '^/goods': ''
             // }
         },
-        '/goods/*':{ // 以/goods开头的所有字符串
+        '/goods/*':{ // 以/goods开头的所有字符串 (所有二级路由) ，**则表示所有层级路由
             target:'http://localhost:3000', 
         },
         '/users/*':{ 

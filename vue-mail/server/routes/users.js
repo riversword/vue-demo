@@ -1,7 +1,17 @@
 var express = require('express');
 var router = express.Router();
 
+//var mongoose = require('mongoose'); //测试
+
 var User = require('./../models/user.js');
+
+//连接mongodb数据库
+// mongoose.connect('mongodb://127.0.0.1:27017/vuemail');//测试
+// mongoose.connection.on("connected", function () {//测试
+//     console.log("MongoDB connected success. users");
+// });//测试
+
+
 /* GET users listing. */  //配置users开头的二级路由
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -84,21 +94,119 @@ router.get("/checkLogin", function (req, res, next) {
 });
 
 //查询当前用户的购物车数据
-router.get("cartList", function (req, res, next) {
+router.get("/cartList", function (req, res, next) {
     var userId = req.cookies.userId; //从请求中拿cookie ，res.cookie是往服务器写入cookie
+    console.log("userId=",userId);
     User.findOne({userId: userId}, function (err, doc) {
         if (err) {
             res.json({
                 status: "1",
-                msg: err.message
+                msg: err.message,
                 result: ''
             });
         } else {
+            //console.log("users.js cartList doc=", doc);
             if (doc) {
                 res.json({
                     status: '0',
                     msg: '',
                     result: doc.cartList
+                });
+            }
+        }
+    });
+});
+
+//购物车删除
+router.post("/cartDel", function (req, res, next) {
+    var userId = req.cookies.userId,
+        productId = req.body.productId;
+    User.update({
+        userId: userId //查询条件
+        }, {
+            $pull: { //$pull monggose删除语法
+                'cartList': {
+                    'productId': productId
+                }
+            }
+        }, function (err, doc) {
+            if (err) {
+                res.json({
+                    status: '1',
+                    msg: err.message,
+                    result: ''
+                });
+            } else {
+                console.log('doc', doc);
+                res.json({
+                    status: '0',
+                    msg: '',
+                    result: 'suc'
+                });
+            }
+        }); 
+});
+
+//编辑购物商品数量
+router.post("/cartEdit", function (req, res, next) {
+    var userId = req.cookies.userId,
+        productId = req.body.productId,
+        productNum = req.body.productNum;
+        checked = req.body.checked;
+    //mongoose 更新子文档语法
+    User.update({"userId": userId, "cartList.productId": productId}, {
+        "cartList.$.productNum": productNum,
+        "cartList.$.checked": checked,
+    }, function (err, doc) {
+        if (err) {
+            res.json({
+                status: '1',
+                msg: err.message,
+                result: ''
+            });
+        } else {
+            console.log('doc', doc);
+            res.json({
+                status: '0',
+                msg: '',
+                result: 'suc'
+            });
+        }
+    });
+
+});
+
+//购物车商品全选/取消去选
+router.post("/editCheckAll", function (req, res, next) {
+    var userId = req.cookies.userId,
+        checkAll = req.body.checkAll ? '1' : '0';
+    User.findOne({userId: userId}, function (err, user) {
+        if (err) {
+            res.json({
+                status: '1',
+                msg: err.message,
+                result: ''
+            });
+        } else {
+            //console.log('doc', doc);
+            if (user) { //user即当前用户的json数据对象
+                user.cartList.forEach( (item)=>{
+                    item.checked = checkAll;
+                } ); 
+                user.save(function (err1, doc1) {
+                    if (err1) {
+                        res.json({
+                            status: '1',
+                            msg: err.message,
+                            result: ''
+                        });
+                    } else {
+                        res.json({
+                            status: '0',
+                            msg: '',
+                            result: 'suc'
+                        });
+                    }
                 });
             }
         }
