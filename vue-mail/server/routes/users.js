@@ -2,8 +2,10 @@ var express = require('express');
 var router = express.Router();
 
 //var mongoose = require('mongoose'); //测试
+require('./../util/util.js');
 
 var User = require('./../models/user.js');
+
 
 //连接mongodb数据库
 // mongoose.connect('mongodb://127.0.0.1:27017/vuemail');//测试
@@ -211,6 +213,180 @@ router.post("/editCheckAll", function (req, res, next) {
             }
         }
     });
+});
+
+//地址列表
+router.get("/addressList", function (req, res, next) {
+     var userId = req.cookies.userId;
+     User.findOne({userId: userId}, function (err, doc) {
+        if (err) {
+            res.json({
+                status: '1',
+                msg: err.message,
+                result: ''
+            });
+        } else {
+            if (doc) {
+                res.json({
+                    status: '0',
+                    msg: '',
+                    result: doc.addressList
+                });
+            }
+        }
+     });
+});
+
+//设置默认地址
+router.post("/setDefault", function(req, res, next) {
+    var userId = req.cookies.userId,
+        addressId = req.body.addressId;
+
+    if (!addressId) {
+        res.json({
+            status: '1003',  //1为普通错误
+            msg: 'address is null', 
+            result: ''
+        });
+    } else {
+        User.findOne({userId: userId}, function (err, doc) {
+            if (err) {
+                res.json({
+                    status: '1',
+                    msg: err.message,
+                    result: ''
+                });
+            } else {
+                var addressList = doc.addressList;
+                addressList.forEach((item)=>{
+                    if (item.addressId == addressId) {
+                        item.isDefault = true;
+                    } else {
+                        item.isDefault = false;
+                    }
+                });
+                doc.save(function (err1, doc1) {
+                    if (err1) {
+                        res.json({
+                            status: '1',
+                            msg: err.message,
+                            result: ''
+                        });
+                    } else {
+                        
+                        res.json({
+                            status: '0',
+                            msg: '',
+                            result: ''
+                        });
+                        
+                    }
+                });
+            }
+        });
+    }
+
+     
+});
+
+//删除地址
+router.post("/delAddress", function(req, res, next) {
+    var userId = req.cookies.userId,
+        addressId = req.body.addressId;
+     User.update({
+        userId: userId //查询条件
+        }, {
+            $pull: { //$pull monggose删除语法
+                'addressList': {
+                    'addressId': addressId
+                }
+            }
+        }, function (err, doc) {
+            if (err) {
+                res.json({
+                    status: '1',
+                    msg: err.message,//mongodb数据库的错误信息
+                    result: ''
+                });
+            } else {
+                console.log('doc', doc);
+                res.json({
+                    status: '0',
+                    msg: '',
+                    result: 'suc'
+                });
+            }
+        });
+});
+
+//订单
+router.post("/payMent", function (req, res, next) {
+    var userId = req.cookies.userId,
+        addressId = req.body.addressId,
+        orderTotal = req.body.orderTotal;
+        User.findOne({userId: userId}, function(err, doc) {
+            if (err) {
+                res.json({
+                    status: '1',
+                    msg: err.message,
+                    result: ''
+                });
+            } else {
+                var address = null,
+                    payList = [];
+                console.log("addressId=",addressId);
+                //获取当前用户地址信息
+                doc.addressList.forEach((item)=>{
+                    if (addressId == item.addressId) {
+                        address = item;
+                    }
+                });
+                //获取用户购物车商品
+                doc.cartList.forEach((item)=>{
+                    if (item.checked == '1') {
+                        payList.push(item);
+                    }
+                });
+
+                var plateform = '622';
+                var r1 = Math.floor(Math.random() * 10);
+                var r2 = Math.floor(Math.random() * 10);
+
+                var sysDate = new Date().Format('yyyyMMddhhmmss');
+                var createDate = new Date().Format('yyyyMMddhhmmss');
+                var orderId = plateform + r1 + sysDate + r2;
+
+                var order = {
+                    orderId: orderId,
+                    orderTotal: orderTotal,
+                    addressInfo: address,
+                    goodsList: payList,
+                    orderStatus: '1',
+                    createDate: createDate
+                };
+
+                doc.orderList.push(order);
+
+                doc.save(function(err1, doc1) {
+                    if (err1) {
+                        res.json({
+                            status: '1',
+                            msg: err.message,
+                            result: ''
+                        });
+                    } else {
+                        res.json({
+                            status: '0',
+                            msg: '',
+                            result: {
+                                orderId: order.orderId,
+                                orderTotal: order.orderTotal
+                            }
+                        });
+                    }
+                })
+            }
+        });
 });
 
 module.exports = router;

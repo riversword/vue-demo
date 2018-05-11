@@ -124,7 +124,7 @@
                 Item total: <span class="total-price">{{totalPrice | currency('￥')}}</span>
               </div>
               <div class="btn-wrap">
-                <a class="btn btn--red">Checkout</a>
+                <a class="btn btn--red" v-bind:class="{'btn--dis': checkedCount == 0}" v-on:click="checkOut">Checkout</a>
               </div>
             </div>
           </div>
@@ -141,30 +141,7 @@
     <nav-footer></nav-footer>
   </div>
 </template>
-<style>
-  .input-sub,.input-add{
-    min-width: 40px;
-    height: 100%;
-    border: 0;
-    color: #605F5F;
-    text-align: center;
-    font-size: 16px;
-    overflow: hidden;
-    display: inline-block;
-    background: #f0f0f0;
-  }
-  .item-quantity .select-self-area{
-    background:none;
-    border: 1px solid #f0f0f0;
-  }
-  .item-quantity .select-self-area .select-ipt{
-    display: inline-block;
-    padding:0 3px;
-    width: 30px;
-    min-width: 30px;
-    text-align: center;
-  }
-</style>
+
 <script>
 import './../assets/css/checkout.css'
 import NavHeader from "@/components/NavHeader.vue" 
@@ -224,7 +201,7 @@ import {currency} from "./../util/currency"
           init() {
             axios.get("/users/cartList").then((response)=>{
               let res = response.data;
-              console.log("response.data", response.data);
+              //console.log("response.data", response.data);
               this.cartList = res.result;
             });
           },
@@ -286,7 +263,39 @@ import {currency} from "./../util/currency"
                 console.log("checkAll update succeed");
               }
             } );
+          },
+          checkOut() {
+            if (this.checkedCount > 0) {
+              this.$router.push({
+                path: "/address"
+              });
+            }
           }
         }
     }
 </script>
+
+<style>
+  .input-sub,.input-add{
+    min-width: 40px;
+    height: 100%;
+    border: 0;
+    color: #605F5F;
+    text-align: center;
+    font-size: 16px;
+    overflow: hidden;
+    display: inline-block;
+    background: #f0f0f0;
+  }
+  .item-quantity .select-self-area{
+    background:none;
+    border: 1px solid #f0f0f0;
+  }
+  .item-quantity .select-self-area .select-ipt{
+    display: inline-block;
+    padding:0 3px;
+    width: 30px;
+    min-width: 30px;
+    text-align: center;
+  }
+</style>
