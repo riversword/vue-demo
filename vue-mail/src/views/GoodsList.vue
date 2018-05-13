@@ -26,7 +26,7 @@
           <dt>Price:</dt>
           <dd><a href="javascript:void(0)" v-bind:class="{'cur': priceChecked == 'all'}" v-on:click="setPriceFilter('all')">All</a></dd>
           <dd v-for="(price, index) in priceFilter"  v-on:click="setPriceFilter(index)"><!-- 此处的列表渲染，会渲染出多个dd元素 -->
-            <a href="javascript:void(0)" v-bind:class="{'cur': priceChecked == index}">{{price.startPrice}} - {{price.endPrice}}</a>
+            <a href="javascript:void(0)" v-bind:class="{'cur': priceChecked == index}">{{price.startPrice | currency('￥')}} - {{price.endPrice | currency('￥')}}</a>
           </dd>
         </dl>
       </div>
@@ -41,7 +41,7 @@
               </div>
               <div class="main">
                 <div class="name">{{item.productName}}</div>
-                <div class="price">{{item.salePrice}}</div>
+                <div class="price">{{item.salePrice | currency('￥')}}</div>
                 <div class="btn-area">
                   <a v-on:click="addCart(item.productId)" href="javascript:;" class="btn btn--m">加入购物车</a>
                 </div>
@@ -96,8 +96,8 @@
 }
 </style>
 <script>
-    import "./../assets/css/base.css"
-    import "./../assets/css/product.css"
+    // import "./../assets/css/base.css"
+    // import "./../assets/css/product.css"
     import NavHeader from "@/components/NavHeader.vue"  //起名与H5标签不要冲突
     import NavFooter from "@/components/NavFooter.vue"
     import NavBread from "@/components/NavBread.vue"
@@ -171,6 +171,9 @@
                           this.busy = false;
                         }
                       } else {//为普通加载则仅显示一页的数据
+                        if (res.result.count < this.pageSize) {//数据少于一页时 不显示loading
+                          this.loading = false;
+                        }
                         this.goodsList = res.result.list;
                         this.busy = false;//启用滚动加载
                       }
@@ -227,6 +230,8 @@
                 if (res.status == "0") {
                   //alert("加入成功");
                   this.mdShowCart = true;
+
+                  this.$store.commit("updateCartCount", 1);
                 } else {
                   // alert("msg:" + res.msg);
                   this.mdShow = true;

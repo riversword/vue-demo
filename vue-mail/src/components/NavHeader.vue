@@ -15,7 +15,7 @@
   <div class="navbar">
     <div class="navbar-left-container">
       <a href="/">
-        <img class="navbar-brand-logo" src="/static/logo.png"></a>
+        <img class="navbar-brand-logo" src="/static/logo.jpg"></a>
     </div>
     <div class="navbar-right-container" style="display: flex;">
       <div class="navbar-menu-container">
@@ -23,8 +23,8 @@
         <span v-text="nickName" v-if="nickName" class="navbar-link"></span>
         <a v-on:click="loginModalFlag = true" v-if="!nickName"href="javascript:void(0)" class="navbar-link">Login</a>
         <a v-on:click="logOut" v-if="nickName" href="javascript:void(0)" class="navbar-link">Logout</a>
-        <div class="navbar-cart-container">
-          <span class="navbar-cart-count"></span>
+        <div class="navbar-cart-container" v-if="nickName">
+          <span class="navbar-cart-count" v-if="cartCount>0">{{cartCount}}</span>
           <a class="navbar-link navbar-cart-link" href="/cart">
             <svg class="navbar-cart-logo">
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -48,11 +48,11 @@
           <ul>
             <li class="regi_form_input">
               <i class="icon IconPeople"></i> 
-              <input v-model="userName" type="text" tabindex="1" name="loginname" placeholder="User Name" data-type="loginname" class="regi_login_input regi_login_input_left">
-            </li> 
+              <input v-model="userName" type="text" tabindex="1" name="loginname" placeholder="User Name" data-type="loginname" class="regi_login_input regi_login_input_left" value="admin">
+            </li>  <!-- placeholder="User Name" -->
             <li class="regi_form_input noMargin">
               <i class="icon IconPwd"></i> 
-              <input v-on:keyup.enter="login" v-model="userPwd" type="password" tabindex="2" name="password" placeholder="Password" class="regi_login_input regi_login_input_left login-input-no input_text">
+              <input v-on:keyup.enter="login" v-model="userPwd" type="password" tabindex="2" name="password" placeholder="Password" class="regi_login_input regi_login_input_left login-input-no input_text" > <!-- placeholder="Password" -->
             </li>
           </ul>
         </div> 
@@ -66,24 +66,39 @@
 </header>
 </template>
 <style type="text/css">
-
+.navbar-brand-logo{
+  height: 80px;
+}
 </style>
 
 <script>
 import '../assets/css/login.css'
 import axios from 'axios'
 
+import {mapState} from 'vuex' //方法2
+
 export default{
   data () {
     return {
-      userName: '',
-      userPwd: '',
+      userName: 'admin',
+      userPwd: '123456',
       errorTip: false,
       loginModalFlag: false,
-      nickName: ''
+      //nickName: '' 用 computed , main.js中的store
     }
   },
 
+  computed: {
+    /*nickName() {
+      return this.$store.state.nickName;
+    },
+    cartCount() {
+      return this.$store.state.cartCount;
+    }*/
+
+    ...mapState(['nickName', 'cartCount']) //方法2 //... 为es6语法 对象（数组）展开
+  },
+//数组去重：var a =[1,2,3,2]; [...new Set(a)]
   mounted(){
     this.checkLogin();
   },
@@ -104,7 +119,11 @@ export default{
           this.errorTip = false;
           //拿到用户名
           this.loginModalFlag = false;
-          this.nickName = res.result.userName;
+          //this.nickName = res.result.userName;
+
+          this.$store.commit("updateUserInfo", res.result.userName);
+          this.getCartCount();
+
         } else {
           this.errorTip = true;
         }
@@ -114,7 +133,12 @@ export default{
       axios.post("/users/logout").then((response)=>{
         let res = response.data;
         if (res.status == "0") {
-          this.nickName = "";
+          //this.nickName = "";
+
+          //this.$store.commit("");
+          this.$store.commit("updateUserInfo", "");
+          this.$store.commit("initCartCount", 0);
+          console.log("退出成功");
         }
       }); 
     },
@@ -123,8 +147,18 @@ export default{
         let res = response.data;
         console.log("check-res", res);
         if (res.status == '0') {
-          this.nickName = res.result;
+          // this.nickName = res.result; //用computed
+          this.$store.commit("updateUserInfo", res.result);
+
+          this.getCartCount();
         }
+      });
+    },
+    getCartCount() {
+      axios.get("/users/getCartCount").then((response)=>{
+        let res = response.data;
+        // this.$store.commit("updateCartCount", res.result);
+        this.$store.commit("initCartCount", res.result);
       });
     }
   }

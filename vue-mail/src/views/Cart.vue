@@ -95,7 +95,7 @@
                 </div>
                 <div class="cart-tab-5">
                   <div class="cart-item-opration">
-                    <a v-on:click="delCartConfirm(item.productId)" href="javascript:;" class="item-edit-btn">
+                    <a v-on:click="delCartConfirm(item)" href="javascript:;" class="item-edit-btn">
                       <svg class="icon icon-del">
                         <use xlink:href="#icon-del"></use>
                       </svg>
@@ -157,7 +157,9 @@ import {currency} from "./../util/currency"
             return{
               cartList: [],
               modalConfirm: false,
-              productId: "", //待删除的商品id
+              delItem: null, //待删除的商品
+              //productId: "", //待删除的商品id
+              //productNum: null, //待删除商品的数量
               //checkAllFlag: false
             }
         },
@@ -205,19 +207,23 @@ import {currency} from "./../util/currency"
               this.cartList = res.result;
             });
           },
-          delCartConfirm(productId) {
+          delCartConfirm(item) {
             this.modalConfirm = true; //显示模态框
-            this.productId = productId;
+            // this.productId = productId;
+            // this.productNum = productNum;
+            this.delItem = item;
           },
           delCart() {
             axios.post("/users/cartDel", {
-              productId: this.productId //请求参数
+              productId: this.delItem.productId //请求参数
             }).then( (response)=>{
               let res = response.data;
               console.log("res",res);
               if (res.status = '0') {
                 this.modalConfirm = false; //隐藏模态框
                 this.init(); //重新请求数据
+
+                this.$store.commit("updateCartCount", -this.delItem.productNum);
               }
             
             } );
@@ -244,6 +250,13 @@ import {currency} from "./../util/currency"
             }).then( (response)=>{
               let res = response.data;
 
+              let num = 0;
+              if (flag == 'add') {
+                num = 1;
+              } else if (flag == 'minus') {
+                num = -1;
+              }
+              this.$store.commit("updateCartCount", num);
             } );
           },
           toggleCheckAll() {

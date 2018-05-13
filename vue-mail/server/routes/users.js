@@ -95,6 +95,34 @@ router.get("/checkLogin", function (req, res, next) {
     }
 });
 
+//查询当前用户的购物车数量
+router.get("/getCartCount", function(req, res, next) {
+    if (req.cookies && req.cookies.userId) {
+        var userId = req.cookies.userId;
+        User.findOne({userId: userId}, function(err, doc) {
+            if (err) {
+                res.json({
+                    status: '1',
+                    msg: err.message,
+                    result: ''
+                });
+            } else {
+                var cartList = doc.cartList;
+                var cartCount = 0;
+                cartList.map(function(item) {
+                    cartCount += parseInt(item.productNum);
+                }); 
+
+                res.json({
+                    status: '0',
+                    msg: '',
+                    result: cartCount
+                });
+            }
+        });
+    }
+});
+
 //查询当前用户的购物车数据
 router.get("/cartList", function (req, res, next) {
     var userId = req.cookies.userId; //从请求中拿cookie ，res.cookie是往服务器写入cookie
@@ -387,6 +415,55 @@ router.post("/payMent", function (req, res, next) {
                 })
             }
         });
+});
+
+//根据orderId查询订单详情
+router.get("/orderDetail", function (req, res, next) {
+    var userId = req.cookies.userId,
+        orderId = req.param("orderId");
+    User.findOne({userId: userId}, function (err, userInfo) {
+        if (err) {
+            res.json({
+                status: '1',
+                msg: err.message,
+                result: ''
+            });
+        } else {
+            var orderList = userInfo.orderList;
+            if (orderList.length>0) {
+                var orderTotal;
+                orderList.forEach((item)=>{
+                    if(item.orderId == orderId) {
+                        orderTotal = item.orderTotal;
+                    }
+                });
+
+                if (orderTotal>0) {
+                    res.json({
+                        status: '0',
+                        msg: '',
+                        result: {
+                            orderId: orderId,
+                            orderTotal: orderTotal
+                        }
+                    });
+                } else {
+                    res.json({
+                        status: '120002',
+                        msg: 'there is no order , orderTotal <= 0',
+                        result: ''
+                    });
+                }
+                
+            } else {
+                res.json({
+                    status: '120001',
+                    msg: 'the user has no order',
+                    result: ''
+                });
+            }
+        }
+    });
 });
 
 module.exports = router;
